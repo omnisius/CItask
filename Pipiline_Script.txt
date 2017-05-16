@@ -1,0 +1,17 @@
+node {
+   stage('Preparation') { 
+      git 'https://github.com/omnisius/jettyembedded'
+   }
+   stage('Build') {
+         sh "mvn -Dmaven.test.failure.ignore clean package"
+    
+   }
+   stage('Results') {
+      junit '**/target/surefire-reports/TEST-*.xml'
+      archive 'target/*.jar'
+   }
+   stage('Sonar') {
+		def sonarqubeScannerHome = tool name: 'mysonar', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+		sh "${sonarqubeScannerHome}/bin/sonar-runner -e -Dsonar.host.url=http://192.168.15.10:9000 -Dsonar.jdbc.driverClassName=org.h2.Driver -Dsonar.jdbc.username=sonar -Dsonar.jdbc.password=sonar -Dsonar.projectName=newJetty -Dsonar.projectVersion=1 -Dsonar.projectKey=1 -Dsonar.sources=src/main/java -Dsonar.jdbc.url=jdbc:h2:tcp://192.168.15.10:9092/sonar;AUTO_SERVER=TRUE"
+    }
+}
